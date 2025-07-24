@@ -8,6 +8,13 @@ import NotesApp from './apps/NotesApp';
 import BrowserApp from './apps/BrowserApp';
 import FilesApp from './apps/FilesApp';
 import CodeEditorApp from './apps/CodeEditorApp';
+import MailApp from './apps/MailApp';
+import SQLTerminalApp from './apps/SQLTerminalApp';
+import DatabaseApp from './apps/DatabaseApp';
+import ScribeStoreApp from './apps/ScribeStoreApp';
+import PDFApp from './apps/PDFApp';
+import ViewerApp from './apps/ViewerApp';
+import VideoApp from './apps/VideoApp';
 import { terminalCommand, listFiles } from '../serviece/api.service';
 
 interface DraggableWindowProps {
@@ -73,6 +80,20 @@ const DraggableWindow: React.FC<DraggableWindowProps> = ({
         return <CodeEditorApp dark={dark} />;
       case 'tools':
         return <ToolsApp dark={dark} />;
+      case 'mail':
+        return <MailApp dark={dark} />;
+      case 'sql':
+        return <SQLTerminalApp dark={dark} />;
+      case 'database':
+        return <DatabaseApp dark={dark} />;
+      case 'store':
+        return <ScribeStoreApp dark={dark} />;
+      case 'pdf':
+        return <PDFApp dark={dark} />;
+      case 'viewer':
+        return <ViewerApp dark={dark} />;
+      case 'video':
+        return <VideoApp dark={dark} />;
       default:
         return <TerminalEngine dark={dark} />;
     }

@@ -1,9 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import DraggableWindow from './DraggableWindow';
 import DynamicIsland from './DynamicIsland';
 import DarkVeil from './ui/DarkVeil';
-import { Settings, FileText, Globe, Terminal, Folder, Code, Wrench, Moon, Sun, Power, Search, Grid3X3 } from 'lucide-react';
+import { Settings, FileText, Globe, Terminal, Folder, Code, Wrench, Moon, Sun, Power, Search, Grid3X3, Mail, Database, Store, Pencil, File, Image as LucideImage, Video } from 'lucide-react';
 import Logo from './ui/Logo';
 import AppLauncher from './apps/AppLauncher';
 import Dock from './ui/Dock';
@@ -50,6 +50,10 @@ const Desktop: React.FC = () => {
       return;
     }
 
+    // Limit to 4 open windows per app type
+    const openCount = windows.filter(w => w.type === type && !w.isMinimized).length;
+    if (openCount >= 4) return;
+
     const newId = Math.max(...windows.map(w => w.id), 0) + 1;
     const newZIndex = maxZIndex + 1;
     setMaxZIndex(newZIndex);
@@ -81,16 +85,6 @@ const Desktop: React.FC = () => {
     ));
   };
 
-  const dockApps = [
-    { type: 'terminal' as AppType, icon: Terminal, label: 'Terminal', color: 'bg-black/80 hover:bg-black/90' },
-    { type: 'files' as AppType, icon: Folder, label: 'Files', color: 'bg-blue-600/80 hover:bg-blue-600/90' },
-    { type: 'editor' as AppType, icon: Code, label: 'Code Editor', color: 'bg-green-600/80 hover:bg-green-600/90' },
-    { type: 'settings' as AppType, icon: Settings, label: 'Settings', color: 'bg-gray-600/80 hover:bg-gray-600/90' },
-    { type: 'notes' as AppType, icon: FileText, label: 'Notes', color: 'bg-yellow-500/80 hover:bg-yellow-500/90' },
-    { type: 'browser' as AppType, icon: Globe, label: 'Browser', color: 'bg-blue-500/80 hover:bg-blue-500/90' },
-    { type: 'tools' as AppType, icon: Wrench, label: 'Tools', color: 'bg-orange-500/80 hover:bg-orange-500/90' }
-  ];
-
   const allApps = [
     { type: "terminal" as AppType, icon: Terminal, label: "Terminal", color: "bg-black/80 hover:bg-black/90" },
     { type: "files" as AppType, icon: Folder, label: "Files", color: "bg-blue-600/80 hover:bg-blue-600/90" },
@@ -98,8 +92,33 @@ const Desktop: React.FC = () => {
     { type: "settings" as AppType, icon: Settings, label: "Settings", color: "bg-gray-600/80 hover:bg-gray-600/90" },
     { type: "notes" as AppType, icon: FileText, label: "Notes", color: "bg-yellow-500/80 hover:bg-yellow-500/90" },
     { type: "browser" as AppType, icon: Globe, label: "Browser", color: "bg-blue-500/80 hover:bg-blue-500/90" },
-    { type: "tools" as AppType, icon: Wrench, label: "Tools", color: "bg-orange-500/80 hover:bg-orange-500/90" }
+    { type: "tools" as AppType, icon: Wrench, label: "Tools", color: "bg-orange-500/80 hover:bg-orange-500/90" },
+    { type: "mail" as AppType, icon: Mail, label: "Mail App", color: "bg-red-500/80 hover:bg-red-500/90" },
+    { type: "sql" as AppType, icon: Database, label: "SQL Terminal", color: "bg-purple-600/80 hover:bg-purple-600/90" },
+    { type: "database" as AppType, icon: Database, label: "Database App", color: "bg-indigo-600/80 hover:bg-indigo-600/90" },
+    { type: "store" as AppType, icon: Pencil, label: "Scribe Store", color: "bg-pink-500/80 hover:bg-pink-500/90" },
+    { type: "pdf" as AppType, icon: File, label: "PDF App", color: "bg-gray-800/80 hover:bg-gray-800/90" },
+    { type: "viewer" as AppType, icon: LucideImage, label: "Viewer", color: "bg-teal-500/80 hover:bg-teal-500/90" },
+    { type: "video" as AppType, icon: Video, label: "Video App", color: "bg-yellow-700/80 hover:bg-yellow-700/90" }
   ];
+
+  const defaultDockApps = [
+    { type: 'terminal' as AppType, icon: Terminal, label: 'Terminal', color: 'bg-black/80 hover:bg-black/90' },
+    { type: 'files' as AppType, icon: Folder, label: 'Files', color: 'bg-blue-600/80 hover:bg-blue-600/90' },
+    { type: 'editor' as AppType, icon: Code, label: 'Code Editor', color: 'bg-green-600/80 hover:bg-green-600/90' },
+    { type: 'settings' as AppType, icon: Settings, label: 'Settings', color: 'bg-gray-600/80 hover:bg-gray-600/90' },
+    { type: 'notes' as AppType, icon: FileText, label: 'Notes', color: 'bg-yellow-500/80 hover:bg-yellow-500/90' },
+    { type: 'browser' as AppType, icon: Globe, label: 'Browser', color: 'bg-blue-500/80 hover:bg-blue-500/90' }
+  ];
+
+  const dockApps = useMemo(() => {
+    const openAppTypes = Array.from(new Set(windows.map(w => w.type)));
+    const dynamicDockApps = allApps.filter(app =>
+      openAppTypes.includes(app.type) &&
+      !defaultDockApps.some(d => d.type === app.type)
+    );
+    return [...defaultDockApps, ...dynamicDockApps];
+  }, [windows]);
 
   return (
     <div className={`relative w-full h-screen overflow-hidden${dark ? ' dark' : ''}`}>
