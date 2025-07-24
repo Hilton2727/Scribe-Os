@@ -1,8 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ApiService } from '../serviece/api.service';
-
-const API_URL = '/api/terminal.php';
+import { terminalCommand } from '../serviece/api.service';
 
 interface TerminalLine {
   type: 'command' | 'output' | 'error';
@@ -12,11 +10,12 @@ interface TerminalLine {
 
 interface TerminalEngineProps {
   onCommand?: (command: string) => void;
+  dark?: boolean;
 }
 
 const getPrompt = (currentDir: string) => `user@${currentDir}> `;
 
-const TerminalEngine: React.FC<TerminalEngineProps> = ({ onCommand }) => {
+const TerminalEngine: React.FC<TerminalEngineProps> = ({ onCommand, dark }) => {
   const [lines, setLines] = useState<TerminalLine[]>([
     {
       type: 'output',
@@ -51,7 +50,7 @@ const TerminalEngine: React.FC<TerminalEngineProps> = ({ onCommand }) => {
   // Helper to fetch current dir from backend
   const fetchCurrentDir = async () => {
     // We'll use a special command to get the current dir name
-    const dir = await ApiService.terminalCommand('pwd');
+    const dir = await terminalCommand('pwd');
     setCurrentDir((dir as string).trim() || 'htdocs');
   };
 
@@ -73,7 +72,7 @@ const TerminalEngine: React.FC<TerminalEngineProps> = ({ onCommand }) => {
     }]);
 
     try {
-      const response = await ApiService.terminalCommand(trimmedCommand);
+      const response = await terminalCommand(trimmedCommand);
       if (typeof response === 'string' && response.includes('<<<CLEAR>>>')) {
         setLines([]);
         setCurrentInput('');
@@ -139,34 +138,34 @@ const TerminalEngine: React.FC<TerminalEngineProps> = ({ onCommand }) => {
   };
 
   return (
-    <div 
+    <div
       ref={containerRef}
-      className="terminal-content h-full p-4 overflow-y-auto cursor-text"
+      className={`terminal-content h-full p-4 overflow-y-auto cursor-text font-mono text-sm ${dark ? 'bg-[#23232b] text-gray-100' : ''}`}
       onClick={handleContainerClick}
     >
-      <div className="font-mono text-sm">
+      <div>
         {lines.map((line, index) => (
           <div key={index} className={`mb-1 ${
-            line.type === 'command' ? 'text-gray-300' : 
+            line.type === 'command' ? (dark ? 'text-gray-400' : 'text-gray-300') : 
             line.type === 'error' ? 'text-red-400' : 
-            'text-green-400'
+            (dark ? 'text-green-300' : 'text-green-400')
           }`}>
             <pre className="whitespace-pre-wrap">{line.content}</pre>
           </div>
         ))}
-        <div className="flex items-center text-gray-300">
-          <span className="text-green-400">{getPrompt(currentDir)}</span>
+        <div className={`flex items-center ${dark ? 'text-gray-300' : 'text-gray-300'}`}>
+          <span className={dark ? 'text-green-300' : 'text-green-400'}>{getPrompt(currentDir)}</span>
           <input
             ref={inputRef}
             type="text"
             value={currentInput}
             onChange={(e) => setCurrentInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="bg-transparent border-none outline-none text-green-400 flex-1 font-mono"
+            className={`bg-transparent border-none outline-none flex-1 font-mono ${dark ? 'text-green-300' : 'text-green-400'}`}
             spellCheck={false}
             autoComplete="off"
           />
-          <span className="text-green-400 animate-cursor-blink">█</span>
+          <span className={`${dark ? 'text-green-300' : 'text-green-400'} animate-cursor-blink`}>█</span>
         </div>
       </div>
     </div>

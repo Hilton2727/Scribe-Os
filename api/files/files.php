@@ -4,12 +4,7 @@ header('Access-Control-Allow-Origin: *');
 
 session_start();
 
-// Use the web root for both local and live servers
 $HTDOCS_DIR = realpath($_SERVER['DOCUMENT_ROOT']);
-if (!$HTDOCS_DIR) {
-    // Fallback for local XAMPP
-    $HTDOCS_DIR = realpath('C:/xampp/htdocs');
-}
 if (!$HTDOCS_DIR) {
     http_response_code(500);
     echo json_encode(['error' => 'Could not determine web root directory.']);

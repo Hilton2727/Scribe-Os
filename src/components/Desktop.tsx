@@ -19,6 +19,7 @@ interface Window {
 const Desktop: React.FC = () => {
   const [windows, setWindows] = useState<Window[]>([]);
   const [maxZIndex, setMaxZIndex] = useState(10);
+  const [dark, setDark] = useState(false);
 
   const closeWindow = (id: number) => {
     setWindows(prev => prev.filter(window => window.id !== id));
@@ -88,13 +89,13 @@ const Desktop: React.FC = () => {
   ];
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
+    <div className={`relative w-full h-screen overflow-hidden${dark ? ' dark' : ''}`}>
       {/* Desktop Logo */}
       <div className="absolute top-6 left-6 z-30">
         <Logo />
       </div>
       {/* Top-right controls */}
-      <DesktopControls />
+      <DesktopControls dark={dark} setDark={setDark} />
       {/* Desktop Background */}
       <div className="absolute inset-0 z-0">
         <DarkVeil />
@@ -109,7 +110,7 @@ const Desktop: React.FC = () => {
         <div className="bg-white/20 backdrop-blur-md rounded-2xl p-2 shadow-2xl border border-white/20">
           <div className="flex items-center space-x-2">
             {dockApps.map(app => {
-              const hasMinimizedWindow = windows.some(w => w.type === app.type && w.isMinimized);
+              const isAppOpen = windows.some(w => w.type === app.type);
               return (
                 <div key={app.type} className="relative">
                   <button
@@ -119,7 +120,7 @@ const Desktop: React.FC = () => {
                   >
                     <app.icon className="w-6 h-6 text-white" />
                   </button>
-                  {hasMinimizedWindow && (
+                  {isAppOpen && (
                     <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-white rounded-full"></div>
                   )}
                 </div>
@@ -148,6 +149,7 @@ const Desktop: React.FC = () => {
               onClose={() => closeWindow(window.id)}
               onMinimize={() => minimizeWindow(window.id)}
               onFocus={() => bringToFront(window.id)}
+              dark={dark}
             />
           </div>
         ))}
@@ -156,14 +158,17 @@ const Desktop: React.FC = () => {
   );
 };
 
-const DesktopControls: React.FC = () => {
-  const [dark, setDark] = useState(false);
+interface DesktopControlsProps {
+  dark: boolean;
+  setDark: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const DesktopControls: React.FC<DesktopControlsProps> = ({ dark, setDark }) => {
   const [showPower, setShowPower] = useState(false);
 
   // Animate theme toggle
   const handleThemeToggle = () => {
     setDark((d) => !d);
-    document.documentElement.classList.toggle('dark');
   };
 
   return (

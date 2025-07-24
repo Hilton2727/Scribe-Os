@@ -1,12 +1,7 @@
 <?php
 session_start();
 
-// Use the web root for both local and live servers
 $HTDOCS_DIR = realpath($_SERVER['DOCUMENT_ROOT']);
-if (!$HTDOCS_DIR) {
-    // Fallback for local XAMPP
-    $HTDOCS_DIR = realpath('C:/xampp/htdocs');
-}
 if (!$HTDOCS_DIR) {
     die('Could not determine web root directory. Please check your server configuration.');
 }
@@ -62,37 +57,35 @@ function runCommand($input) {
                 $output .= $f . "\n";
             }
             break;
-
         case 'cd':
-            $dir = $args;
-            $target = ($dir === '..') ? dirname($_SESSION['cwd']) : sanitizePath($dir);
-            if ($target && is_dir($target) && str_starts_with($target, $HTDOCS_DIR)) {
+            $target = sanitizePath($args);
+            if ($target && is_dir($target)) {
                 $_SESSION['cwd'] = $target;
             } else {
                 $output = "Directory not found.";
             }
             break;
-
         case 'cat':
             $file = sanitizePath($args);
-            $output = ($file && is_file($file)) ? file_get_contents($file) : "File not found.";
-            break;
-
-        case 'rm':
-            $target = sanitizePath($args);
-            if ($target) {
-                if (is_file($target)) {
-                    unlink($target);
-                    $output = "File deleted.";
-                } elseif (is_dir($target)) {
-                    rmdir($target);
-                    $output = "Folder deleted.";
-                } else {
-                    $output = "Target not found.";
-                }
+            if ($file && is_file($file)) {
+                $output = file_get_contents($file);
+            } else {
+                $output = "File not found.";
             }
             break;
-
+        case 'rm':
+            $target = sanitizePath($args);
+            if ($target && file_exists($target)) {
+                if (is_dir($target)) {
+                    rmdir($target);
+                } else {
+                    unlink($target);
+                }
+                $output = "Deleted successfully.";
+            } else {
+                $output = "File or folder not found.";
+            }
+            break;
         case 'touch':
             $file = buildPath($args);
             if (!file_exists($file)) {
@@ -102,17 +95,15 @@ function runCommand($input) {
                 $output = "File already exists.";
             }
             break;
-
         case 'mkdir':
-            $folder = buildPath($args);
-            if (!file_exists($folder)) {
-                mkdir($folder);
+            $dir = buildPath($args);
+            if (!file_exists($dir)) {
+                mkdir($dir);
                 $output = "Folder created.";
             } else {
                 $output = "Folder already exists.";
             }
             break;
-
         case 'rename':
             $parts = preg_split('/\s+/', $args);
             if (count($parts) === 2) {
@@ -128,11 +119,9 @@ function runCommand($input) {
                 $output = "Usage: rename <old> <new>";
             }
             break;
-
         case 'clear':
         case 'cls':
             return "<<<CLEAR>>>";
-
         case 'edit':
             $editFile = sanitizePath($args);
             if (!$editFile || !is_file($editFile)) {
@@ -140,17 +129,14 @@ function runCommand($input) {
             }
             $_SESSION['edit_file'] = $editFile;
             return "<<<EDIT>>>";
-
         case 'history':
             $output = implode("\n", $_SESSION['history']);
             break;
-
         case 'pwd':
             $cwd = $_SESSION['cwd'];
             $rel = ltrim(str_replace($HTDOCS_DIR, '', $cwd), DIRECTORY_SEPARATOR);
             $output = 'htdocs' . ($rel ? DIRECTORY_SEPARATOR . $rel : '');
             break;
-
         case 'help':
             $output = <<<EOT
 Available commands:
@@ -169,11 +155,9 @@ Available commands:
   exit                  End session
 EOT;
             break;
-
         case 'exit':
             session_destroy();
             exit("Session ended.");
-
         default:
             $output = "Unknown command. Type 'help' to see commands.";
     }
@@ -181,7 +165,6 @@ EOT;
     return $output;
 }
 
-// API mode: only output command result, no HTML
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cmd'])) {
     header('Access-Control-Allow-Origin: *');
     header('Content-Type: text/plain; charset=utf-8');
