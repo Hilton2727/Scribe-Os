@@ -1,0 +1,18 @@
+
+{
+  "name": "Lovable Terminal Desktop",
+  "short_name": "Terminal",
+  "description": "macOS-style draggable web terminal desktop PWA",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}
