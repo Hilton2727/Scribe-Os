@@ -3,8 +3,10 @@ import React, { useState } from 'react';
 import DraggableWindow from './DraggableWindow';
 import DynamicIsland from './DynamicIsland';
 import DarkVeil from './ui/DarkVeil';
-import { Settings, FileText, Globe, Terminal, Folder, Code, Wrench, Moon, Sun, Power } from 'lucide-react';
-import Logo from './Logo';
+import { Settings, FileText, Globe, Terminal, Folder, Code, Wrench, Moon, Sun, Power, Search, Grid3X3 } from 'lucide-react';
+import Logo from './ui/Logo';
+import AppLauncher from './apps/AppLauncher';
+import Dock from './ui/Dock';
 
 type AppType = 'terminal' | 'settings' | 'notes' | 'browser' | 'files' | 'editor' | 'tools';
 
@@ -20,6 +22,7 @@ const Desktop: React.FC = () => {
   const [windows, setWindows] = useState<Window[]>([]);
   const [maxZIndex, setMaxZIndex] = useState(10);
   const [dark, setDark] = useState(false);
+  const [showAppLauncher, setShowAppLauncher] = useState(false);
 
   const closeWindow = (id: number) => {
     setWindows(prev => prev.filter(window => window.id !== id));
@@ -88,6 +91,16 @@ const Desktop: React.FC = () => {
     { type: 'tools' as AppType, icon: Wrench, label: 'Tools', color: 'bg-orange-500/80 hover:bg-orange-500/90' }
   ];
 
+  const allApps = [
+    { type: "terminal" as AppType, icon: Terminal, label: "Terminal", color: "bg-black/80 hover:bg-black/90" },
+    { type: "files" as AppType, icon: Folder, label: "Files", color: "bg-blue-600/80 hover:bg-blue-600/90" },
+    { type: "editor" as AppType, icon: Code, label: "Code Editor", color: "bg-green-600/80 hover:bg-green-600/90" },
+    { type: "settings" as AppType, icon: Settings, label: "Settings", color: "bg-gray-600/80 hover:bg-gray-600/90" },
+    { type: "notes" as AppType, icon: FileText, label: "Notes", color: "bg-yellow-500/80 hover:bg-yellow-500/90" },
+    { type: "browser" as AppType, icon: Globe, label: "Browser", color: "bg-blue-500/80 hover:bg-blue-500/90" },
+    { type: "tools" as AppType, icon: Wrench, label: "Tools", color: "bg-orange-500/80 hover:bg-orange-500/90" }
+  ];
+
   return (
     <div className={`relative w-full h-screen overflow-hidden${dark ? ' dark' : ''}`}>
       {/* Desktop Logo */}
@@ -105,30 +118,23 @@ const Desktop: React.FC = () => {
       {/* Dynamic Island */}
       <DynamicIsland />
 
+      {/* App Launcher Modal */}
+      <AppLauncher
+        show={showAppLauncher}
+        onClose={() => setShowAppLauncher(false)}
+        onAppSelect={openApp}
+        dark={dark}
+        allApps={allApps}
+      />
       {/* Dock */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-[9999]">
-        <div className="bg-white/20 backdrop-blur-md rounded-2xl p-2 shadow-2xl border border-white/20">
-          <div className="flex items-center space-x-2">
-            {dockApps.map(app => {
-              const isAppOpen = windows.some(w => w.type === app.type);
-              return (
-                <div key={app.type} className="relative">
-                  <button
-                    onClick={() => openApp(app.type)}
-                    className={`w-12 h-12 rounded-lg ${app.color} transition-all duration-200 hover:scale-110 flex items-center justify-center`}
-                    title={`New ${app.label}`}
-                  >
-                    <app.icon className="w-6 h-6 text-white" />
-                  </button>
-                  {isAppOpen && (
-                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-white rounded-full"></div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+      <Dock
+        dockApps={dockApps}
+        windows={windows}
+        openApp={openApp}
+        showAppLauncher={showAppLauncher}
+        setShowAppLauncher={setShowAppLauncher}
+        dark={dark}
+      />
 
       {/* Windows */}
       <div className="absolute inset-0">

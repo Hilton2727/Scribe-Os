@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { terminalCommand } from '../serviece/api.service';
+import { terminalCommand } from '../../serviece/api.service';
 
 interface TerminalLine {
   type: 'command' | 'output' | 'error';
